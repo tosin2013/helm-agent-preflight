@@ -202,14 +202,14 @@ func writeManifests(manifests map[render.ResourceKey]map[string]interface{}) (st
 
 // conftestResult is the JSON structure conftest emits per file.
 type conftestResult struct {
-	Filename string              `json:"filename"`
-	Failures []conftestViolation `json:"failures"`
-	Warnings []conftestViolation `json:"warnings"`
-	Successes []interface{}      `json:"successes"`
+	Filename  string              `json:"filename"`
+	Failures  []conftestViolation `json:"failures"`
+	Warnings  []conftestViolation `json:"warnings"`
+	Successes []interface{}       `json:"successes"`
 }
 
 type conftestViolation struct {
-	Message  string `json:"msg"`
+	Message string `json:"msg"`
 }
 
 // parseOutput parses conftest JSON output into security.Finding slice.
