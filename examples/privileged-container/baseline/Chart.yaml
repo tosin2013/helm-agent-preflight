@@ -1,0 +1,4 @@
+apiVersion: v2
+name: privileged-container-example
+description: Privileged container example - baseline (safe)
+version: 1.0.0

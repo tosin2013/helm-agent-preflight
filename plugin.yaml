@@ -1,0 +1,35 @@
+name: preflight
+version: 0.1.0
+usage: "helm preflight upgrade --from <baseline> --to <candidate> [flags]"
+description: |-
+  Offline Helm upgrade qualification with deterministic security checks.
+
+  Renders both baseline and candidate charts locally, diffs resources,
+  evaluates security invariants, and emits a versioned JSON report.
+  No cluster access, no deployment.
+
+  Exit codes:
+    0  PASS           - all configured offline checks passed
+    2  BLOCK          - at least one enforced policy was violated
+    3  INDETERMINATE  - required verification could not be completed
+    4  error          - tool execution failure
+command: "$HELM_PLUGIN_DIR/bin/preflight"
+platformCommand:
+  - os: linux
+    arch: amd64
+    command: "$HELM_PLUGIN_DIR/bin/preflight-linux-amd64"
+  - os: linux
+    arch: arm64
+    command: "$HELM_PLUGIN_DIR/bin/preflight-linux-arm64"
+  - os: darwin
+    arch: amd64
+    command: "$HELM_PLUGIN_DIR/bin/preflight-darwin-amd64"
+  - os: darwin
+    arch: arm64
+    command: "$HELM_PLUGIN_DIR/bin/preflight-darwin-arm64"
+  - os: windows
+    arch: amd64
+    command: "$HELM_PLUGIN_DIR/bin/preflight-windows-amd64.exe"
+hooks:
+  install: "scripts/install.sh"
+  update: "scripts/install.sh"

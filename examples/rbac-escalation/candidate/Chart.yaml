@@ -1,0 +1,4 @@
+apiVersion: v2
+name: rbac-escalation-example
+description: RBAC escalation example - candidate (wildcard permissions added)
+version: 2.0.0

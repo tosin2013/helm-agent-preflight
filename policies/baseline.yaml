@@ -1,0 +1,75 @@
+# SPDX-License-Identifier: Apache-2.0
+# helm-agent-preflight baseline security policy (user-facing copy)
+# The embedded copy used by the tool is at internal/security/policies/baseline.yaml
+apiVersion: preflight.helm.sh/v1alpha1
+kind: PreflightPolicy
+metadata:
+  name: baseline
+  version: "1.0.0"
+  description: >-
+    Implements a subset of the Kubernetes Baseline Pod Security Standard
+    plus RBAC wildcard escalation detection.
+spec:
+  rules:
+    - id: RBAC-001
+      name: rbac-wildcard-resources
+      severity: CRITICAL
+      description: Wildcard (*) in ClusterRole/Role resources
+      enabled: true
+      verdict_on_match: BLOCK
+
+    - id: RBAC-002
+      name: rbac-wildcard-verbs
+      severity: CRITICAL
+      description: Wildcard (*) in ClusterRole/Role verbs
+      enabled: true
+      verdict_on_match: BLOCK
+
+    - id: WORK-001
+      name: privileged-container
+      severity: CRITICAL
+      description: securityContext.privileged=true
+      enabled: true
+      verdict_on_match: BLOCK
+
+    - id: WORK-002
+      name: host-network
+      severity: HIGH
+      description: spec.hostNetwork=true
+      enabled: true
+      verdict_on_match: BLOCK
+
+    - id: WORK-003
+      name: host-pid
+      severity: HIGH
+      description: spec.hostPID=true
+      enabled: true
+      verdict_on_match: BLOCK
+
+    - id: WORK-004
+      name: host-ipc
+      severity: HIGH
+      description: spec.hostIPC=true
+      enabled: true
+      verdict_on_match: BLOCK
+
+    - id: WORK-005
+      name: host-path-mount
+      severity: HIGH
+      description: hostPath volume mount
+      enabled: true
+      verdict_on_match: BLOCK
+
+    - id: WORK-006
+      name: privilege-escalation
+      severity: HIGH
+      description: allowPrivilegeEscalation=true
+      enabled: true
+      verdict_on_match: BLOCK
+
+    - id: HOOK-001
+      name: upgrade-hook-side-effects
+      severity: MEDIUM
+      description: Upgrade hook without hook-delete-policy
+      enabled: true
+      verdict_on_match: WARN

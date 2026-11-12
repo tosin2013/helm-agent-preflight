@@ -1,0 +1,23 @@
+#!/usr/bin/env sh
+# SPDX-License-Identifier: Apache-2.0
+# Copyright The helm-agent-preflight Authors.
+# Portable wrapper — selects the platform-specific binary.
+set -e
+
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m)
+case "$ARCH" in
+  x86_64)        ARCH="amd64" ;;
+  aarch64|arm64) ARCH="arm64" ;;
+esac
+
+PLUGIN_DIR="${HELM_PLUGIN_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
+BINARY="${PLUGIN_DIR}/bin/preflight-${OS}-${ARCH}"
+
+if [ ! -f "$BINARY" ]; then
+  echo "helm-agent-preflight: no binary found at ${BINARY}" >&2
+  echo "Run 'helm plugin update preflight' or build from source: make build" >&2
+  exit 4
+fi
+
+exec "$BINARY" "$@"

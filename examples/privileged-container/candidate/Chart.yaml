@@ -1,0 +1,4 @@
+apiVersion: v2
+name: privileged-container-example
+description: Privileged container example - candidate (privileged=true added)
+version: 2.0.0

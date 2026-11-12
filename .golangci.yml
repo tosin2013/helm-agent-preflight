@@ -1,0 +1,21 @@
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - govet
+    - staticcheck
+    - misspell
+    - unused
+    - whitespace
+    - gofmt
+
+linters-settings:
+  gofmt:
+    simplify: true
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - unused

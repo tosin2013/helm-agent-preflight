@@ -1,0 +1,4 @@
+apiVersion: v2
+name: rbac-escalation-example
+description: RBAC escalation example - baseline (safe)
+version: 1.0.0
