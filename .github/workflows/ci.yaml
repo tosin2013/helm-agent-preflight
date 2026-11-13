@@ -93,6 +93,8 @@ jobs:
 
       - name: Run acceptance tests
         run: make test-integration
+        env:
+          POLICY_DIR: ${{ github.workspace }}/policies/rego
 
   cross-compile:
     name: Cross-compile (${{ matrix.goos }}/${{ matrix.goarch }})

@@ -28,7 +28,7 @@ func TestEvaluator_RBACWildcard_Block(t *testing.T) {
 	if !conftestAvailable() {
 		t.Skip("conftest binary not in PATH")
 	}
-	e := conftesteval.New("conftest", "../../../../policies/rego")
+	e := conftesteval.New("conftest", "../../../policies/rego")
 	key := render.ResourceKey{
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "ClusterRole",
@@ -65,7 +65,7 @@ func TestEvaluator_PrivilegedContainer_Block(t *testing.T) {
 	if !conftestAvailable() {
 		t.Skip("conftest binary not in PATH")
 	}
-	e := conftesteval.New("conftest", "../../../../policies/rego")
+	e := conftesteval.New("conftest", "../../../policies/rego")
 	key := render.ResourceKey{
 		APIVersion: "apps/v1",
 		Kind:       "Deployment",
@@ -111,7 +111,7 @@ func TestEvaluator_PreExisting_Tagged(t *testing.T) {
 	if !conftestAvailable() {
 		t.Skip("conftest binary not in PATH")
 	}
-	e := conftesteval.New("conftest", "../../../../policies/rego")
+	e := conftesteval.New("conftest", "../../../policies/rego")
 	key := render.ResourceKey{
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "ClusterRole",
@@ -146,7 +146,7 @@ func TestEvaluator_CleanManifest_NoBlockFindings(t *testing.T) {
 	if !conftestAvailable() {
 		t.Skip("conftest binary not in PATH")
 	}
-	e := conftesteval.New("conftest", "../../../../policies/rego")
+	e := conftesteval.New("conftest", "../../../policies/rego")
 	key := render.ResourceKey{APIVersion: "apps/v1", Kind: "Deployment", Namespace: "default", Name: "nginx"}
 	manifests := map[render.ResourceKey]map[string]interface{}{
 		key: {

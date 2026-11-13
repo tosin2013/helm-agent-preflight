@@ -8,6 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 BIN="${PREFLIGHT_BIN:-}"
 HELM_BIN="${HELM_BIN:-helm}"
+POLICY_DIR="${POLICY_DIR:-${ROOT_DIR}/policies/rego}"
 
 # Determine native binary if PREFLIGHT_BIN not set
 if [ -z "$BIN" ] || [ ! -f "$BIN" ]; then
@@ -35,7 +36,7 @@ run_test() {
 
   echo "--- $name ---"
   set +e
-  "$BIN" upgrade "$@" --output-file "$report_file" 2>/dev/null
+  "$BIN" upgrade "$@" --policy-dir "$POLICY_DIR" --output-file "$report_file" 2>/dev/null
   actual_exit=$?
   set -e
 
@@ -101,6 +102,7 @@ set +e
 "$BIN" upgrade \
   --from "$ROOT_DIR/examples/rbac-escalation/baseline" \
   --to   "$ROOT_DIR/examples/rbac-escalation/candidate" \
+  --policy-dir "$POLICY_DIR" \
   --release-name test-release \
   --namespace default \
   --kube-version 1.28 \
@@ -108,6 +110,7 @@ set +e
 "$BIN" upgrade \
   --from "$ROOT_DIR/examples/rbac-escalation/baseline" \
   --to   "$ROOT_DIR/examples/rbac-escalation/candidate" \
+  --policy-dir "$POLICY_DIR" \
   --release-name test-release \
   --namespace default \
   --kube-version 1.28 \
@@ -131,6 +134,7 @@ set +e
 "$BIN" upgrade \
   --from "$ROOT_DIR/examples/rbac-escalation/baseline" \
   --to   "$ROOT_DIR/examples/rbac-escalation/candidate" \
+  --policy-dir "$POLICY_DIR" \
   --release-name test-release \
   --namespace default \
   --kube-version 1.28 \
@@ -171,6 +175,7 @@ set +e
 "$BIN" upgrade \
   --from "$t07_chart" \
   --to   "$t07_chart" \
+  --policy-dir "$POLICY_DIR" \
   --release-name test-release \
   --namespace default \
   --kube-version 1.28 \
@@ -196,6 +201,7 @@ set +e
 KUBECONFIG=/dev/null "$BIN" upgrade \
   --from "$ROOT_DIR/examples/safe-upgrade/baseline" \
   --to   "$ROOT_DIR/examples/safe-upgrade/candidate" \
+  --policy-dir "$POLICY_DIR" \
   --release-name test-release \
   --namespace default \
   --kube-version 1.28 \

@@ -201,11 +201,13 @@ func writeManifests(manifests map[render.ResourceKey]map[string]interface{}) (st
 }
 
 // conftestResult is the JSON structure conftest emits per file.
+// successes is json.RawMessage because conftest emits either an integer count
+// (default) or an array of objects (--verbose), and we don't use the field.
 type conftestResult struct {
 	Filename  string              `json:"filename"`
 	Failures  []conftestViolation `json:"failures"`
 	Warnings  []conftestViolation `json:"warnings"`
-	Successes []interface{}       `json:"successes"`
+	Successes json.RawMessage     `json:"successes"`
 }
 
 type conftestViolation struct {
