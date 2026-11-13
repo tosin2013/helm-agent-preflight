@@ -87,7 +87,7 @@ printf '   '
 typeout ' to examples/rbac-escalation/candidate, release demo-app,' 0.04
 echo ""
 printf '   '
-typeout ' namespace default, Kubernetes 1.32. Run the tool. Report the verdict."' 0.04
+typeout ' namespace default, Kubernetes 1.35. Run the tool. Report the verdict."' 0.04
 echo ""
 sleep 0.5
 
@@ -97,7 +97,7 @@ sleep 0.5
   --auto \
   --model "$MODEL" \
   --file "skills/helm-preflight/SKILL.md" \
-  "Qualify the Helm upgrade from examples/rbac-escalation/baseline to examples/rbac-escalation/candidate, release demo-app, namespace default, Kubernetes 1.32. The preflight binary is at ${BINARY} and the policy dir is ${POLICY}. Run the tool, report the verdict, all findings, and propose the smallest fix." \
+  "Qualify the Helm upgrade from examples/rbac-escalation/baseline to examples/rbac-escalation/candidate, release demo-app, namespace default, Kubernetes 1.35. The preflight binary is at ${BINARY} and the policy dir is ${POLICY}. Run the tool, report the verdict, all findings, and propose the smallest fix." \
   2>/dev/null
 
 # 10-second pause so the viewer can read the output

@@ -68,7 +68,7 @@ run_test "T01-safe-upgrade" 0 "PASS" \
   --to   "$ROOT_DIR/examples/safe-upgrade/candidate" \
   --release-name test-release \
   --namespace default \
-  --kube-version 1.32
+  --kube-version 1.35
 
 # T02 — RBAC escalation: wildcard * → BLOCK (exit 2)
 run_test "T02-rbac-escalation" 2 "BLOCK" \
@@ -76,7 +76,7 @@ run_test "T02-rbac-escalation" 2 "BLOCK" \
   --to   "$ROOT_DIR/examples/rbac-escalation/candidate" \
   --release-name test-release \
   --namespace default \
-  --kube-version 1.32
+  --kube-version 1.35
 
 # T03 — Privileged container → BLOCK (exit 2)
 run_test "T03-privileged-container" 2 "BLOCK" \
@@ -84,7 +84,7 @@ run_test "T03-privileged-container" 2 "BLOCK" \
   --to   "$ROOT_DIR/examples/privileged-container/candidate" \
   --release-name test-release \
   --namespace default \
-  --kube-version 1.32
+  --kube-version 1.35
 
 # T04 — Non-existent baseline path → INDETERMINATE (exit 3)
 run_test "T04-indeterminate" 3 "INDETERMINATE" \
@@ -92,7 +92,7 @@ run_test "T04-indeterminate" 3 "INDETERMINATE" \
   --to   "$ROOT_DIR/examples/safe-upgrade/candidate" \
   --release-name test-release \
   --namespace default \
-  --kube-version 1.32
+  --kube-version 1.35
 
 # T05 — Determinism: run T02 twice, fingerprints must match
 echo "--- T05-determinism ---"
@@ -105,7 +105,7 @@ set +e
   --policy-dir "$POLICY_DIR" \
   --release-name test-release \
   --namespace default \
-  --kube-version 1.32 \
+  --kube-version 1.35 \
   --output-file "$f1" 2>/dev/null
 "$BIN" upgrade \
   --from "$ROOT_DIR/examples/rbac-escalation/baseline" \
@@ -113,7 +113,7 @@ set +e
   --policy-dir "$POLICY_DIR" \
   --release-name test-release \
   --namespace default \
-  --kube-version 1.32 \
+  --kube-version 1.35 \
   --output-file "$f2" 2>/dev/null
 set -e
 fp1=$(jq -r '.fingerprint' "$f1" 2>/dev/null || echo "")
@@ -137,7 +137,7 @@ set +e
   --policy-dir "$POLICY_DIR" \
   --release-name test-release \
   --namespace default \
-  --kube-version 1.32 \
+  --kube-version 1.35 \
   --output-file "$t06_report" 2>/dev/null
 set -e
 t06_verdict=$(jq -r '.verdict' "$t06_report" 2>/dev/null || echo "")
@@ -178,7 +178,7 @@ set +e
   --policy-dir "$POLICY_DIR" \
   --release-name test-release \
   --namespace default \
-  --kube-version 1.32 \
+  --kube-version 1.35 \
   --output-file "$t07_report" 2>/dev/null
 set -e
 if grep -q "c3VwZXJzZWNyZXQ=" "$t07_report" || grep -q "bXktc2VjcmV0LWFwaS1rZXk=" "$t07_report"; then
@@ -204,7 +204,7 @@ KUBECONFIG=/dev/null "$BIN" upgrade \
   --policy-dir "$POLICY_DIR" \
   --release-name test-release \
   --namespace default \
-  --kube-version 1.32 \
+  --kube-version 1.35 \
   --output-file "$t08_report" 2>/dev/null
 t08_exit=$?
 set -e
