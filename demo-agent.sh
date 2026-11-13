@@ -23,7 +23,7 @@ POLICY_DIR="${SCRIPT_DIR}/policies/rego"
 SKILL="${SCRIPT_DIR}/skills/helm-preflight/SKILL.md"
 
 # Default: a free model that works without an API key
-MODEL="${OPENCODE_MODEL:-opencode/big-pickle}"
+MODEL="${OPENCODE_MODEL:-litellm/claude-sonnet-4-6}"
 SCENARIO="rbac"
 
 # Parse flags
