@@ -116,6 +116,33 @@ tidy:
 clean:
 	@rm -rf '$(BINDIR)' coverage.out coverage.html
 
+# ---- demos ----------------------------------------------------------------
+
+VHSBIN = $(GOBIN)/vhs
+
+.PHONY: demo-install-vhs
+demo-install-vhs:
+	go install github.com/charmbracelet/vhs@latest
+	@echo ""
+	@echo "Also install ffmpeg (required by vhs for GIF output):"
+	@echo "  sudo dnf install -y ffmpeg        # RHEL / el10"
+	@echo "  sudo apt-get install -y ffmpeg    # Ubuntu / Debian"
+
+.PHONY: demo-record
+demo-record: demo-record-offline demo-record-agent
+
+.PHONY: demo-record-offline
+demo-record-offline:
+	@command -v vhs >/dev/null 2>&1 || (echo "vhs not found — run: make demo-install-vhs" && exit 1)
+	mkdir -p demos
+	vhs demos/offline.tape
+
+.PHONY: demo-record-agent
+demo-record-agent:
+	@command -v vhs >/dev/null 2>&1 || (echo "vhs not found — run: make demo-install-vhs" && exit 1)
+	mkdir -p demos
+	vhs demos/agent.tape
+
 # ---- info -----------------------------------------------------------------
 
 .PHONY: info

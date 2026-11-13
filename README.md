@@ -58,6 +58,13 @@ bash demo-agent.sh      # AI agent session using OpenCode + SKILL.md protocol
 bash demo-minikube.sh   # live cluster demo: preflight blocks bad charts before helm runs
 ```
 
+To record GIFs (requires [VHS](https://github.com/charmbracelet/vhs) + ffmpeg):
+
+```bash
+make demo-install-vhs   # installs VHS via go install
+make demo-record        # records demos/offline.gif and demos/agent.gif
+```
+
 ## What it does
 
 `helm preflight upgrade` renders both a baseline (current) and candidate (new)
