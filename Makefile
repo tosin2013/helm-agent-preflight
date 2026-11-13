@@ -130,9 +130,9 @@ demo-record-asciinema:
 	  --idle-time-limit 3 --cols 100 --rows 40 --overwrite \
 	  --command "bash scripts/record-offline.sh"
 	asciinema rec demos/agent.cast \
-	  --title "helm-agent-preflight: AI agent session (SKILL.md protocol)" \
-	  --idle-time-limit 2 --cols 160 --rows 50 --overwrite \
-	  --command "bash demo-agent.sh"
+	  --title "helm preflight upgrade — OpenCode agent: live app → BLOCK → fix" \
+	  --idle-time-limit 3 --cols 160 --rows 50 --overwrite \
+	  --command "bash scripts/record-agent.sh"
 	@echo "Cast files written to demos/. View with: asciinema play demos/offline.cast"
 
 # agg — render .cast files to .gif without a browser or display
@@ -140,9 +140,9 @@ demo-record-asciinema:
 .PHONY: demo-render-gif
 demo-render-gif:
 	@command -v agg >/dev/null 2>&1 || (echo "agg not found — see https://github.com/asciinema/agg/releases" && exit 1)
-	agg --font-family "Red Hat Mono" --font-size 14 --speed 1.0 --theme dracula \
+	agg --font-dir /usr/share/fonts/redhat-vf --font-family "Red Hat Mono" --font-size 14 --speed 1.0 --theme dracula \
 	  demos/offline.cast demos/offline.gif
-	agg --font-family "Red Hat Mono" --font-size 13 --speed 1.0 --theme dracula \
+	agg --font-dir /usr/share/fonts/redhat-vf --font-family "Red Hat Mono" --font-size 13 --speed 1.0 --theme dracula \
 	  demos/agent.cast demos/agent.gif
 	@echo "GIFs written: demos/offline.gif demos/agent.gif"
 

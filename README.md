@@ -84,6 +84,13 @@ bash demo-minikube.sh   # live cluster demo: preflight blocks bad charts before 
 
 ### AI agent session (OpenCode + SKILL.md protocol)
 
+The agent demo shows the full real-world workflow:
+
+1. **Live app** — `webapp` is already running in the cluster (`kubectl get pods -n staging`)
+2. **Bad candidate** — the chart the team wants to deploy has wildcard RBAC (`apiGroups/resources/verbs: ["*"]`)
+3. **Agent qualifies offline** — OpenCode runs `preflight upgrade`, reads the JSON verdict, returns **🚫 BLOCK** with an exact diff fix
+4. **Cluster still clean** — `kubectl get clusterrole` confirms the bad rules never landed
+
 ![agent demo](demos/agent.gif)
 
 <details>
