@@ -4,6 +4,60 @@ Offline Helm upgrade qualification with deterministic security checks.
 
 **Status:** Hackathon MVP (PRD v0.3)
 
+## How it works
+
+```
+  Human / CI / AI Agent (OpenCode, Claude Code, …)
+         │
+         │  "Qualify this Helm upgrade"
+         ▼
+  ┌──────────────────────────────────────────────────────┐
+  │            helm preflight upgrade                    │
+  │                                                      │
+  │  ① helm template baseline   ──┐                      │
+  │  ② helm template candidate  ──┤  diff                │
+  │  ③ Δ added / modified / removed resources           │
+  │  ④ conftest test  (Rego policies, offline)           │
+  │                                                      │
+  │  Verdict  : PASS · BLOCK · INDETERMINATE             │
+  │  Fingerprint: sha256:…  (tamper-evident)             │
+  │  No cluster access · No network · No deployment      │
+  └──────────────┬───────────────────────────────────────┘
+                 │  Versioned JSON report
+        ┌────────┴──────────┐
+        │                   │
+     PASS (exit 0)       BLOCK (exit 2)
+        │                   │
+  Human authorizes    Agent proposes smallest fix
+        │             → re-run preflight → PASS
+        ▼                   │
+  helm upgrade         Human reviews & authorizes
+  (actual deploy)
+```
+
+## Quick start
+
+```bash
+# Install
+helm plugin install https://github.com/tosin2013/helm-agent-preflight
+
+# Run offline qualification
+helm preflight upgrade \
+  --from  ./baseline-chart \
+  --to    ./candidate-chart \
+  --release-name my-app \
+  --namespace    production \
+  --kube-version 1.28
+```
+
+## Demos
+
+```bash
+bash demo.sh            # 6 offline scenarios: PASS, BLOCK, INDETERMINATE, secrets, determinism
+bash demo-agent.sh      # AI agent session using OpenCode + SKILL.md protocol
+bash demo-minikube.sh   # live cluster demo: preflight blocks bad charts before helm runs
+```
+
 ## What it does
 
 `helm preflight upgrade` renders both a baseline (current) and candidate (new)
