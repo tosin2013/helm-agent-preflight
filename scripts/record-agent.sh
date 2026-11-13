@@ -54,14 +54,12 @@ set +e
   --auto \
   --model "$MODEL" \
   --file "skills/helm-preflight/SKILL.md" \
-  "Qualify this Helm upgrade using helm preflight upgrade:
+  "Before running any tools, write 2-3 sentences explaining what you are about to do and why. Then qualify this Helm upgrade using helm preflight upgrade:
   --from  examples/rbac-escalation/baseline
   --to    examples/rbac-escalation/candidate
   --release-name webapp --namespace staging --kube-version 1.37
 
-Report the verdict, all security findings with their JSON paths, and
-propose the smallest concrete fix. Include the fingerprint from the
-JSON output."
+After running the tool, report the verdict, all security findings with their JSON paths, and propose the smallest concrete fix. Include the fingerprint."
 OPENCODE_EXIT=$?
 set -e
 
