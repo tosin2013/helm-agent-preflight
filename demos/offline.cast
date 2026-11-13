@@ -1,0 +1,9 @@
+{"version": 2, "width": 100, "height": 40, "timestamp": 1794533697, "idle_time_limit": 3.0, "env": {"SHELL": "/bin/bash", "TERM": "xterm-256color"}, "title": "helm-agent-preflight: PASS, BLOCK (RBAC), BLOCK (privileged) — no cluster"}
+[0.004435, "o", "\u001b[1m# helm-agent-preflight — offline Helm upgrade qualification\u001b[0m\r\n\u001b[2m# No cluster · No network · No deployment\u001b[0m\r\n\r\n"]
+[2.00578, "o", "\u001b[0;36m\u001b[1m─── Scenario A: safe image-tag upgrade (nginx 1.24 → 1.25) ───\u001b[0m\r\n"]
+[3.198337, "o", "{\r\n  \"verdict\": \"PASS\",\r\n  \"diff\": {\r\n    \"added\": 0,\r\n    \"modified\": 1\r\n  },\r\n  \"findings\": 0\r\n}\r\n"]
+[6.20368, "o", "\r\n\u001b[0;31m\u001b[1m─── Scenario B: wildcard ClusterRole → BLOCK ─────────────────\u001b[0m\r\n"]
+[7.395149, "o", "{\r\n  \"verdict\": \"BLOCK\",\r\n  \"findings\": [\r\n    {\r\n      \"rule\": \"RBAC-001\",\r\n      \"severity\": \"CRITICAL\",\r\n      \"object\": \"ClusterRole/demo-reader\",\r\n      \"msg\": \"wildcard (*) in resources grants access to all resource types\"\r\n    },\r\n    {\r\n      \"rule\": \"RBAC-002\",\r\n      \"severity\": \"CRITICAL\",\r\n      \"object\": \"ClusterRole/demo-reader\",\r\n      \"msg\": \"wildcard (*) in verbs grants all operations\"\r\n    }\r\n  ]\r\n}\r\n"]
+[10.400349, "o", "\r\n\u001b[0;31m\u001b[1m─── Scenario C: privileged container → BLOCK ─────────────────\u001b[0m\r\n"]
+[11.589546, "o", "{\r\n  \"verdict\": \"BLOCK\",\r\n  \"finding\": {\r\n    \"rule\": \"WORK-001\",\r\n    \"severity\": \"CRITICAL\",\r\n    \"msg\": \"container 'worker' runs privileged (securityContext.privileged=true)\",\r\n    \"newly_introduced\": true\r\n  }\r\n}\r\n"]
+[14.594823, "o", "\r\n\u001b[2m# Fingerprints are deterministic — same frozen inputs → same verdict, every time\u001b[0m\r\n"]

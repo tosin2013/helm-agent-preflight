@@ -58,11 +58,18 @@ bash demo-agent.sh      # AI agent session using OpenCode + SKILL.md protocol
 bash demo-minikube.sh   # live cluster demo: preflight blocks bad charts before helm runs
 ```
 
-To record GIFs (requires [VHS](https://github.com/charmbracelet/vhs) + ffmpeg):
+Terminal recordings (`.cast` files in `demos/`) can be played locally or in a browser:
 
 ```bash
-make demo-install-vhs   # installs VHS via go install
-make demo-record        # records demos/offline.gif and demos/agent.gif
+# Play locally (install asciinema: pip install asciinema)
+asciinema play demos/offline.cast   # PASS + BLOCK scenarios
+asciinema play demos/agent.cast     # AI agent session
+
+# Re-record
+make demo-record-asciinema          # headless-safe, no display needed
+
+# Record as GIF (requires VHS + ffmpeg + display — handled automatically in CI)
+make demo-install-vhs && make demo-record
 ```
 
 ## What it does

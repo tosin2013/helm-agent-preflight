@@ -120,13 +120,30 @@ clean:
 
 VHSBIN = $(GOBIN)/vhs
 
+# asciinema (lightweight, no browser/display needed — works on headless servers)
+.PHONY: demo-record-asciinema
+demo-record-asciinema:
+	@command -v asciinema >/dev/null 2>&1 || (echo "asciinema not found — run: pip install asciinema" && exit 1)
+	mkdir -p demos
+	asciinema rec demos/offline.cast \
+	  --title "helm-agent-preflight: PASS, BLOCK — no cluster" \
+	  --idle-time-limit 3 --cols 100 --rows 40 --overwrite \
+	  --command "bash scripts/record-offline.sh"
+	asciinema rec demos/agent.cast \
+	  --title "helm-agent-preflight: AI agent session (SKILL.md protocol)" \
+	  --idle-time-limit 2 --cols 160 --rows 50 --overwrite \
+	  --command "bash demo-agent.sh"
+	@echo "Cast files written to demos/. View with: asciinema play demos/offline.cast"
+
+# VHS (produces GIF/MP4 — needs ffmpeg + ttyd + display server or CI Ubuntu runner)
 .PHONY: demo-install-vhs
 demo-install-vhs:
 	go install github.com/charmbracelet/vhs@latest
 	@echo ""
-	@echo "Also install ffmpeg (required by vhs for GIF output):"
+	@echo "Also install ffmpeg + ttyd (required by vhs):"
 	@echo "  sudo dnf install -y ffmpeg        # RHEL / el10"
 	@echo "  sudo apt-get install -y ffmpeg    # Ubuntu / Debian"
+	@echo "  curl -Lo ~/.local/bin/ttyd https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.x86_64 && chmod +x ~/.local/bin/ttyd"
 
 .PHONY: demo-record
 demo-record: demo-record-offline demo-record-agent
