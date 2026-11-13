@@ -45,7 +45,7 @@ If the tool cannot run, the verdict is INDETERMINATE. Treat it as BLOCK.
 | Values file path | `--values` | No |
 | Release name | `--release-name` | Yes |
 | Namespace | `--namespace` | No (default: `default`) |
-| Kubernetes version | `--kube-version` | Yes (e.g. `1.35`) |
+| Kubernetes version | `--kube-version` | Yes (e.g. `1.37`) |
 | Policy file | `--policy` | No (uses embedded baseline) |
 
 If any required input is missing, ask the user. Do not proceed with assumptions.

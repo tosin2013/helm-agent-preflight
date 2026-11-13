@@ -63,7 +63,7 @@ Evaluators:
 	f.StringVar(&opts.ValuesFile, "values", "", "Path to values file (optional)")
 	f.StringVar(&opts.ReleaseName, "release-name", "", "Helm release name (required)")
 	f.StringVar(&opts.Namespace, "namespace", "default", "Kubernetes namespace")
-	f.StringVar(&opts.KubeVersion, "kube-version", "", "Kubernetes version for Capabilities (required, e.g. 1.35)")
+	f.StringVar(&opts.KubeVersion, "kube-version", "", "Kubernetes version for Capabilities (required, e.g. 1.37)")
 	f.StringVar(&opts.PolicyDir, "policy-dir", "", "Directory containing Rego policies (default: $HELM_PLUGIN_DIR/policies/rego)")
 	f.StringVar(&opts.Evaluator, "evaluator", "conftest", "Security evaluator: conftest (default) or kyverno (Phase 1)")
 	f.StringVar(&opts.OutputFile, "output-file", "", "Write JSON report to file (default: stdout)")

@@ -47,7 +47,7 @@ helm preflight upgrade \
   --to    ./candidate-chart \
   --release-name my-app \
   --namespace    production \
-  --kube-version 1.35
+  --kube-version 1.37
 ```
 
 ## OpenShift support
@@ -55,13 +55,15 @@ helm preflight upgrade \
 The plugin works with any Kubernetes distribution including OpenShift. Pass the
 Kubernetes version that matches your OpenShift release via `--kube-version`:
 
-| OpenShift | Kubernetes | `--kube-version` |
-|-----------|------------|-----------------|
-| 4.19 | 1.32 | `--kube-version 1.32` |
-| 4.20 | 1.33 | `--kube-version 1.33` |
-| 4.21 | 1.34 | `--kube-version 1.34` |
-| 4.22 | 1.35 | `--kube-version 1.35` |
-| 4.23 | 1.36 | `--kube-version 1.36` |
+| Platform | Version | `--kube-version` |
+|----------|---------|-----------------|
+| Kubernetes (latest stable) | **1.37** | `--kube-version 1.37` |
+| Kubernetes 1.36 | 1.36 | `--kube-version 1.36` |
+| OpenShift 4.23 | 1.36 | `--kube-version 1.36` |
+| OpenShift 4.22 | 1.35 | `--kube-version 1.35` |
+| OpenShift 4.21 | 1.34 | `--kube-version 1.34` |
+| OpenShift 4.20 | 1.33 | `--kube-version 1.33` |
+| OpenShift 4.19 | 1.32 | `--kube-version 1.32` |
 
 The tool runs `helm template` offline — no cluster connection, no OpenShift API
 server, no credentials. The same security rules (RBAC wildcards, privileged
@@ -145,7 +147,7 @@ helm preflight upgrade \
   --to          ./examples/safe-upgrade/candidate \
   --release-name my-release \
   --namespace   production \
-  --kube-version 1.35 \
+  --kube-version 1.37 \
   [--values     values.yaml] \
   [--policy     policies/baseline.yaml] \
   [--output-file report.json]
@@ -216,7 +218,7 @@ opencode run \
   --file skills/helm-preflight/SKILL.md \
   "Qualify the Helm upgrade from examples/rbac-escalation/baseline \
    to examples/rbac-escalation/candidate, release demo-app, \
-   namespace default, Kubernetes 1.35"
+   namespace default, Kubernetes 1.37"
 ```
 
 OpenCode reads the SKILL.md, calls `preflight upgrade` via its shell tool,

@@ -21,7 +21,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BINARY="${SCRIPT_DIR}/bin/preflight-linux-amd64"
 POLICY_DIR="${SCRIPT_DIR}/policies/rego"
 REPORTS_DIR="${SCRIPT_DIR}/demo-minikube-reports"
-MINIKUBE_K8S_VERSION="v1.35.0"
+MINIKUBE_K8S_VERSION="v1.37.2"
 MINIKUBE_VERSION="v1.39.0"
 RELEASE_NAME="preflight-demo"
 NAMESPACE="preflight-demo"
@@ -138,7 +138,7 @@ run_preflight() {
     --policy-dir "$POLICY_DIR" \
     --release-name "$RELEASE_NAME" \
     --namespace "$NAMESPACE" \
-    --kube-version "1.35" \
+    --kube-version "1.37" \
     --output-file "$report" \
     2>/tmp/preflight-mk-stderr.txt
   echo $?
