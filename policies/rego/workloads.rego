@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # Workload security rules — Conftest policy for helm-agent-preflight
+# OPA v1 syntax (required by OPA 1.x / conftest 0.71+)
 # Covers Kubernetes Baseline Pod Security Standard (subset)
 #
 # Message format (pipe-delimited, 7 fields):
@@ -8,64 +9,65 @@ package preflight
 
 # --- pod spec helpers --------------------------------------------------------
 
-pod_spec(obj) = spec {
+pod_spec(obj) = spec if {
 	obj.kind == "Pod"
 	spec := obj.spec
 }
 
-pod_spec(obj) = spec {
+pod_spec(obj) = spec if {
 	obj.kind == "Deployment"
 	spec := obj.spec.template.spec
 }
 
-pod_spec(obj) = spec {
+pod_spec(obj) = spec if {
 	obj.kind == "DaemonSet"
 	spec := obj.spec.template.spec
 }
 
-pod_spec(obj) = spec {
+pod_spec(obj) = spec if {
 	obj.kind == "StatefulSet"
 	spec := obj.spec.template.spec
 }
 
-pod_spec(obj) = spec {
+pod_spec(obj) = spec if {
 	obj.kind == "ReplicaSet"
 	spec := obj.spec.template.spec
 }
 
-pod_spec(obj) = spec {
+pod_spec(obj) = spec if {
 	obj.kind == "Job"
 	spec := obj.spec.template.spec
 }
 
-pod_spec(obj) = spec {
+pod_spec(obj) = spec if {
 	obj.kind == "CronJob"
 	spec := obj.spec.jobTemplate.spec.template.spec
 }
 
-ns(obj) = n {
+ns(obj) = n if {
 	n := object.get(obj.metadata, "namespace", "")
 }
 
 # all_containers yields {index, container} for containers + initContainers + ephemeralContainers
-all_containers[{"idx": i, "prefix": "containers", "c": c}] {
+
+all_containers contains {"idx": i, "prefix": "containers", "c": c} if {
 	spec := pod_spec(input)
 	c := spec.containers[i]
 }
 
-all_containers[{"idx": i, "prefix": "initContainers", "c": c}] {
+all_containers contains {"idx": i, "prefix": "initContainers", "c": c} if {
 	spec := pod_spec(input)
 	c := spec.initContainers[i]
 }
 
-all_containers[{"idx": i, "prefix": "ephemeralContainers", "c": c}] {
+all_containers contains {"idx": i, "prefix": "ephemeralContainers", "c": c} if {
 	spec := pod_spec(input)
 	c := spec.ephemeralContainers[i]
 }
 
 # WORK-001: privileged containers --------------------------------------------
 
-deny[msg] {
+deny contains msg if {
 	pod_spec(input)
 	entry := all_containers[_]
 	entry.c.securityContext.privileged == true
@@ -77,7 +79,7 @@ deny[msg] {
 
 # WORK-002: hostNetwork ------------------------------------------------------
 
-deny[msg] {
+deny contains msg if {
 	spec := pod_spec(input)
 	spec.hostNetwork == true
 	msg := sprintf(
@@ -88,7 +90,7 @@ deny[msg] {
 
 # WORK-003: hostPID ----------------------------------------------------------
 
-deny[msg] {
+deny contains msg if {
 	spec := pod_spec(input)
 	spec.hostPID == true
 	msg := sprintf(
@@ -99,7 +101,7 @@ deny[msg] {
 
 # WORK-004: hostIPC ----------------------------------------------------------
 
-deny[msg] {
+deny contains msg if {
 	spec := pod_spec(input)
 	spec.hostIPC == true
 	msg := sprintf(
@@ -110,7 +112,7 @@ deny[msg] {
 
 # WORK-005: hostPath volumes -------------------------------------------------
 
-deny[msg] {
+deny contains msg if {
 	spec := pod_spec(input)
 	vol := spec.volumes[i]
 	vol.hostPath
@@ -122,7 +124,7 @@ deny[msg] {
 
 # WORK-006: allowPrivilegeEscalation ----------------------------------------
 
-deny[msg] {
+deny contains msg if {
 	pod_spec(input)
 	entry := all_containers[_]
 	entry.c.securityContext.allowPrivilegeEscalation == true

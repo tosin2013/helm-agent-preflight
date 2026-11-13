@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # RBAC escalation rules — Conftest policy for helm-agent-preflight
+# OPA v1 syntax (required by OPA 1.x / conftest 0.71+)
 #
 # Message format (pipe-delimited, 7 fields):
 #   RULE_ID|SEVERITY|KIND|NAMESPACE|NAME|JSON_PATH|description
@@ -8,7 +9,7 @@ package preflight
 
 # RBAC-001: wildcard resources -----------------------------------------------
 
-deny[msg] {
+deny contains msg if {
 	input.kind == "ClusterRole"
 	some i
 	input.rules[i].resources[_] == "*"
@@ -18,7 +19,7 @@ deny[msg] {
 	)
 }
 
-deny[msg] {
+deny contains msg if {
 	input.kind == "Role"
 	some i
 	input.rules[i].resources[_] == "*"
@@ -30,7 +31,7 @@ deny[msg] {
 
 # RBAC-002: wildcard verbs ----------------------------------------------------
 
-deny[msg] {
+deny contains msg if {
 	input.kind == "ClusterRole"
 	some i
 	input.rules[i].verbs[_] == "*"
@@ -40,7 +41,7 @@ deny[msg] {
 	)
 }
 
-deny[msg] {
+deny contains msg if {
 	input.kind == "Role"
 	some i
 	input.rules[i].verbs[_] == "*"
