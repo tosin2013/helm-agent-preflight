@@ -140,9 +140,9 @@ demo-record-asciinema:
 .PHONY: demo-render-gif
 demo-render-gif:
 	@command -v agg >/dev/null 2>&1 || (echo "agg not found — see https://github.com/asciinema/agg/releases" && exit 1)
-	agg --font-family "Red Hat Mono" --font-size 14 --speed 1.5 --theme dracula \
+	agg --font-family "Red Hat Mono" --font-size 14 --speed 1.0 --theme dracula \
 	  demos/offline.cast demos/offline.gif
-	agg --font-family "Red Hat Mono" --font-size 13 --speed 1.5 --theme dracula \
+	agg --font-family "Red Hat Mono" --font-size 13 --speed 1.0 --theme dracula \
 	  demos/agent.cast demos/agent.gif
 	@echo "GIFs written: demos/offline.gif demos/agent.gif"
 
