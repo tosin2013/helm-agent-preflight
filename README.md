@@ -58,19 +58,30 @@ bash demo-agent.sh      # AI agent session using OpenCode + SKILL.md protocol
 bash demo-minikube.sh   # live cluster demo: preflight blocks bad charts before helm runs
 ```
 
-Terminal recordings (`.cast` files in `demos/`) can be played locally or in a browser:
+### Offline qualification: PASS and BLOCK
+
+![offline demo](demos/offline.gif)
+
+### AI agent session (OpenCode + SKILL.md protocol)
+
+![agent demo](demos/agent.gif)
+
+<details>
+<summary>Re-record or play the terminal recordings</summary>
 
 ```bash
-# Play locally (install asciinema: pip install asciinema)
-asciinema play demos/offline.cast   # PASS + BLOCK scenarios
-asciinema play demos/agent.cast     # AI agent session
+# Play locally (pip install asciinema)
+asciinema play demos/offline.cast
+asciinema play demos/agent.cast
 
-# Re-record
-make demo-record-asciinema          # headless-safe, no display needed
+# Re-record casts (headless-safe, no display needed)
+make demo-record-asciinema
 
-# Record as GIF (requires VHS + ffmpeg + display — handled automatically in CI)
-make demo-install-vhs && make demo-record
+# Re-render GIFs from casts (requires agg: https://github.com/asciinema/agg)
+make demo-render-gif
 ```
+
+</details>
 
 ## What it does
 

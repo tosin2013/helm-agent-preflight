@@ -135,6 +135,17 @@ demo-record-asciinema:
 	  --command "bash demo-agent.sh"
 	@echo "Cast files written to demos/. View with: asciinema play demos/offline.cast"
 
+# agg — render .cast files to .gif without a browser or display
+# Install: curl -fsSL https://github.com/asciinema/agg/releases/download/v1.9.0/agg-x86_64-unknown-linux-gnu -o ~/.local/bin/agg && chmod +x ~/.local/bin/agg
+.PHONY: demo-render-gif
+demo-render-gif:
+	@command -v agg >/dev/null 2>&1 || (echo "agg not found — see https://github.com/asciinema/agg/releases" && exit 1)
+	agg --font-family "Red Hat Mono" --font-size 14 --speed 1.5 --theme dracula \
+	  demos/offline.cast demos/offline.gif
+	agg --font-family "Red Hat Mono" --font-size 13 --speed 1.5 --theme dracula \
+	  demos/agent.cast demos/agent.gif
+	@echo "GIFs written: demos/offline.gif demos/agent.gif"
+
 # VHS (produces GIF/MP4 — needs ffmpeg + ttyd + display server or CI Ubuntu runner)
 .PHONY: demo-install-vhs
 demo-install-vhs:
