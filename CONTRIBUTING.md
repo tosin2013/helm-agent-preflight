@@ -37,3 +37,9 @@ will apply to PRs of size/S or larger.
 - Tests: table-driven tests using `github.com/stretchr/testify`
 - Build: `make build`, `make test`, `make test-style`
 - Commits: DCO sign-off required (`git commit -s`)
+
+## Dependabot pull requests
+
+Automated dependency update PRs from Dependabot are exempt from the DCO
+sign-off requirement since Dependabot cannot use `git commit -s`.
+Maintainers may merge these PRs without a matching `Signed-off-by` line.

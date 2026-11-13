@@ -47,7 +47,7 @@ helm preflight upgrade \
   --to    ./candidate-chart \
   --release-name my-app \
   --namespace    production \
-  --kube-version 1.28
+  --kube-version 1.32
 ```
 
 ## Demos
@@ -128,7 +128,7 @@ helm preflight upgrade \
   --to          ./examples/safe-upgrade/candidate \
   --release-name my-release \
   --namespace   production \
-  --kube-version 1.28 \
+  --kube-version 1.32 \
   [--values     values.yaml] \
   [--policy     policies/baseline.yaml] \
   [--output-file report.json]
@@ -199,7 +199,7 @@ opencode run \
   --file skills/helm-preflight/SKILL.md \
   "Qualify the Helm upgrade from examples/rbac-escalation/baseline \
    to examples/rbac-escalation/candidate, release demo-app, \
-   namespace default, Kubernetes 1.28"
+   namespace default, Kubernetes 1.32"
 ```
 
 OpenCode reads the SKILL.md, calls `preflight upgrade` via its shell tool,

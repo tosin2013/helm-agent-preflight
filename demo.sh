@@ -14,7 +14,7 @@ BIN_DIR="${SCRIPT_DIR}/bin"
 POLICY_DIR="${SCRIPT_DIR}/policies/rego"
 EXAMPLES_DIR="${SCRIPT_DIR}/examples"
 REPORTS_DIR="${SCRIPT_DIR}/demo-reports"
-CONFTEST_VERSION="0.51.0"
+CONFTEST_VERSION="0.71.1"
 
 # ── colours ──────────────────────────────────────────────────────────────────
 BOLD='\033[1m'
@@ -191,7 +191,7 @@ run_scenario "Scenario-A" "PASS" "${REPORTS_DIR}/scenario-a.json" \
   --to    "${EXAMPLES_DIR}/safe-upgrade/candidate" \
   --release-name demo-release \
   --namespace default \
-  --kube-version 1.28
+  --kube-version 1.32
 
 # ── scenario B: RBAC escalation ──────────────────────────────────────────────
 head "Scenario B — RBAC escalation (new wildcard ClusterRole)"
@@ -203,7 +203,7 @@ run_scenario "Scenario-B" "BLOCK" "${REPORTS_DIR}/scenario-b.json" \
   --to    "${EXAMPLES_DIR}/rbac-escalation/candidate" \
   --release-name demo-release \
   --namespace default \
-  --kube-version 1.28
+  --kube-version 1.32
 
 # ── scenario C: privileged container ─────────────────────────────────────────
 head "Scenario C — Privileged container (securityContext.privileged=true)"
@@ -215,7 +215,7 @@ run_scenario "Scenario-C" "BLOCK" "${REPORTS_DIR}/scenario-c.json" \
   --to    "${EXAMPLES_DIR}/privileged-container/candidate" \
   --release-name demo-release \
   --namespace default \
-  --kube-version 1.28
+  --kube-version 1.32
 
 # ── scenario D: indeterminate (bad path) ─────────────────────────────────────
 head "Scenario D — INDETERMINATE (baseline chart path does not exist)"
@@ -229,7 +229,7 @@ set +e
   --policy-dir "${POLICY_DIR}" \
   --release-name demo-release \
   --namespace default \
-  --kube-version 1.28 \
+  --kube-version 1.32 \
   --output-file "${REPORTS_DIR}/scenario-d.json" \
   2>/tmp/preflight-stderr.txt
 d_exit=$?
@@ -254,7 +254,7 @@ echo -e "  ${DIM}Same frozen inputs must produce identical fingerprints${RESET}"
   --policy-dir "${POLICY_DIR}" \
   --release-name demo-release \
   --namespace default \
-  --kube-version 1.28 \
+  --kube-version 1.32 \
   --output-file "${REPORTS_DIR}/scenario-e1.json" \
   2>/dev/null || true
 
@@ -264,7 +264,7 @@ echo -e "  ${DIM}Same frozen inputs must produce identical fingerprints${RESET}"
   --policy-dir "${POLICY_DIR}" \
   --release-name demo-release \
   --namespace default \
-  --kube-version 1.28 \
+  --kube-version 1.32 \
   --output-file "${REPORTS_DIR}/scenario-e2.json" \
   2>/dev/null || true
 
@@ -310,7 +310,7 @@ set +e
   --policy-dir "${POLICY_DIR}" \
   --release-name demo-release \
   --namespace default \
-  --kube-version 1.28 \
+  --kube-version 1.32 \
   --output-file "${REPORTS_DIR}/scenario-f.json" \
   2>/dev/null
 set -e

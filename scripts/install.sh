@@ -27,7 +27,7 @@ install_binary() {
     echo "  NOTE: 'conftest' is required for security evaluation but was not found in PATH."
     echo "  Install conftest: https://www.conftest.dev/install/"
     echo "  Quick install (Linux/macOS):"
-    echo "    curl -fsSL https://github.com/open-policy-agent/conftest/releases/download/v0.51.0/conftest_0.51.0_\$(uname -s)_x86_64.tar.gz | tar -xz -C /usr/local/bin conftest"
+    echo "    curl -fsSL https://github.com/open-policy-agent/conftest/releases/download/v0.71.1/conftest_0.71.1_\$(uname -s)_x86_64.tar.gz | tar -xz -C /usr/local/bin conftest"
     echo ""
   fi
   exit 0

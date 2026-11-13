@@ -35,7 +35,7 @@ sleep 1
 "$BIN" upgrade \
   --from "$EX/safe-upgrade/baseline" \
   --to   "$EX/safe-upgrade/candidate" \
-  --release-name demo --namespace default --kube-version 1.28 \
+  --release-name demo --namespace default --kube-version 1.32 \
   --policy-dir "$POLICY" \
   | python3 -c "
 import json, sys
@@ -54,7 +54,7 @@ sleep 1
 "$BIN" upgrade \
   --from "$EX/rbac-escalation/baseline" \
   --to   "$EX/rbac-escalation/candidate" \
-  --release-name demo --namespace default --kube-version 1.28 \
+  --release-name demo --namespace default --kube-version 1.32 \
   --policy-dir "$POLICY" \
   | python3 -c "
 import json, sys
@@ -77,7 +77,7 @@ sleep 1
 "$BIN" upgrade \
   --from "$EX/privileged-container/baseline" \
   --to   "$EX/privileged-container/candidate" \
-  --release-name demo --namespace default --kube-version 1.28 \
+  --release-name demo --namespace default --kube-version 1.32 \
   --policy-dir "$POLICY" \
   | python3 -c "
 import json, sys

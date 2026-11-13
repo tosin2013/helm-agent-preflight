@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright The helm-agent-preflight Authors.
+#
+# Dependabot configuration — weekly automated dependency updates.
+# Note: Dependabot PRs are exempt from the DCO sign-off requirement
+# since Dependabot cannot use `git commit -s`. See CONTRIBUTING.md.
+version: 2
+updates:
+  # Go module dependencies (cobra, testify, sigs.k8s.io/yaml, …)
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "go"
+
+  # GitHub Actions (checkout, setup-go, codecov, upload-artifact, setup-helm, …)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"

@@ -79,11 +79,11 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4
         with:
-          version: "v3.14.4"
+          version: "v4.3.1"
 
       - name: Install Conftest
         run: |
-          CONFTEST_VERSION="0.51.0"
+          CONFTEST_VERSION="0.71.1"
           curl -fsSL "https://github.com/open-policy-agent/conftest/releases/download/v${CONFTEST_VERSION}/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz" \
             | tar -xz -C /usr/local/bin conftest
           conftest --version
@@ -163,7 +163,7 @@ jobs:
 
       - name: Install Conftest
         run: |
-          curl -fsSL "https://github.com/open-policy-agent/conftest/releases/download/v0.51.0/conftest_0.51.0_Linux_x86_64.tar.gz" \
+          curl -fsSL "https://github.com/open-policy-agent/conftest/releases/download/v0.71.1/conftest_0.71.1_Linux_x86_64.tar.gz" \
             | tar -xz -C /usr/local/bin conftest
           conftest --version
 

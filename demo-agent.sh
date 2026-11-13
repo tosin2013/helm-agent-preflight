@@ -109,7 +109,7 @@ The preflight binary to run is:
     --to   ${TO} \\
     --release-name demo-app \\
     --namespace default \\
-    --kube-version 1.28 \\
+    --kube-version 1.32 \\
     --policy-dir ${POLICY_DIR} \\
     --output-file /tmp/preflight-agent-report.json
 
