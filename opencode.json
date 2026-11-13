@@ -1,0 +1,4 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": "When asked to qualify, verify, or check a Helm upgrade in this project, follow the protocol defined in skills/helm-preflight/SKILL.md exactly. The preflight binary is in bin/ and the Rego policies are in policies/rego/. Never invent or assume a verdict — always run the tool and report its JSON output."
+}

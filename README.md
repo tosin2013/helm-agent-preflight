@@ -185,9 +185,50 @@ do not change PASS to BLOCK — only newly introduced violations cause BLOCK.
 
 No LLM or API key required. Any human can run `helm preflight upgrade` directly.
 
+## OpenCode AI agent integration
+
+The project ships a portable skill at `skills/helm-preflight/SKILL.md` and a
+project-level `opencode.json` that automatically loads it when you run OpenCode
+from the project directory.
+
+**Run an agent session:**
+
+```bash
+# From the project directory (opencode.json is auto-loaded)
+opencode run \
+  --file skills/helm-preflight/SKILL.md \
+  "Qualify the Helm upgrade from examples/rbac-escalation/baseline \
+   to examples/rbac-escalation/candidate, release demo-app, \
+   namespace default, Kubernetes 1.28"
+```
+
+OpenCode reads the SKILL.md, calls `preflight upgrade` via its shell tool,
+reads the JSON report, and returns the verdict and findings. It never
+invents or assumes the security verdict — the tool decides.
+
+**Configure your model** (`~/.config/opencode/opencode.json`):
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "litellm/claude-sonnet-4-6",
+  "providers": {
+    "litellm": {
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "https://your-litellm-proxy/v1",
+        "apiKey":  "your-api-key"
+      }
+    }
+  }
+}
+```
+
+See `demo-agent.sh` to run the full demonstration.
+
 ## Agent skill
 
-See `skills/helm-preflight/SKILL.md` for the portable AI agent skill.
+See `skills/helm-preflight/SKILL.md` for the portable agent skill protocol.
 
 ## License
 
