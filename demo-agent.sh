@@ -2,280 +2,156 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright The helm-agent-preflight Authors.
 #
-# demo-agent.sh — AI Agent × helm-agent-preflight
+# demo-agent.sh — Real OpenCode × helm-agent-preflight
 #
-# Shows how an AI coding agent (OpenCode) uses SKILL.md to invoke
-# helm preflight upgrade, interpret the JSON verdict, and propose fixes —
-# without substituting its own security judgment for the tool's output.
+# Runs an actual OpenCode agent session using the helm-preflight SKILL.md.
+# The agent reads the skill, invokes 'preflight upgrade', interprets the
+# JSON verdict, and proposes a fix — all using the real LLM, not a simulation.
 #
-# The script runs in two modes:
-#   1. Simulated (always): step-by-step walkthrough with the actual tool
-#   2. Live OpenCode session (if ~/.opencode/bin/opencode is found):
-#      runs the agent for real against the RBAC escalation scenario
+# Usage:
+#   bash demo-agent.sh                        # uses default free model
+#   bash demo-agent.sh --model litellm/claude-sonnet-4-6
+#   bash demo-agent.sh --scenario safe        # PASS scenario
+#   bash demo-agent.sh --scenario rbac        # BLOCK + fix scenario (default)
+#   bash demo-agent.sh --scenario privileged  # privileged container BLOCK
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OPENCODE="${HOME}/.opencode/bin/opencode"
 BINARY="${SCRIPT_DIR}/bin/preflight-linux-amd64"
 POLICY_DIR="${SCRIPT_DIR}/policies/rego"
-OPENCODE="${HOME}/.opencode/bin/opencode"
-REPORTS_DIR="${SCRIPT_DIR}/demo-agent-reports"
-mkdir -p "$REPORTS_DIR"
+SKILL="${SCRIPT_DIR}/skills/helm-preflight/SKILL.md"
 
-# ── colours ──────────────────────────────────────────────────────────────────
-BOLD='\033[1m'
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
-DIM='\033[2m'
-RESET='\033[0m'
+# Default: a free model that works without an API key
+MODEL="${OPENCODE_MODEL:-opencode/big-pickle}"
+SCENARIO="rbac"
 
-banner()   { echo -e "\n${BLUE}${BOLD}══ $* ══${RESET}"; }
-agent()    { echo -e "${MAGENTA}${BOLD}  🤖 Agent:${RESET} $*"; }
-tool()     { echo -e "${CYAN}${BOLD}  🔧 Tool:${RESET}  $*"; }
-human()    { echo -e "${YELLOW}${BOLD}  👤 Human:${RESET} $*"; }
-verdict_pass()  { echo -e "${GREEN}${BOLD}  ✔  PASS${RESET}  — $*"; }
-verdict_block() { echo -e "${RED}${BOLD}  ✘  BLOCK${RESET} — $*"; }
-dim()      { echo -e "${DIM}$*${RESET}"; }
+# Parse flags
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --model)      MODEL="$2"; shift 2 ;;
+    --scenario)   SCENARIO="$2"; shift 2 ;;
+    *) echo "Unknown flag: $1"; exit 1 ;;
+  esac
+done
 
-# ── prerequisite check ────────────────────────────────────────────────────────
+# ── prerequisite checks ───────────────────────────────────────────────────────
+if [ ! -f "$OPENCODE" ]; then
+  echo "OpenCode not found at $OPENCODE"
+  echo "Install from: https://opencode.ai"
+  exit 1
+fi
+
 if [ ! -f "$BINARY" ]; then
-  echo -e "${RED}Binary not found: $BINARY${RESET}"
+  echo "preflight binary not found: $BINARY"
   echo "Run: make build"
   exit 1
 fi
+
 if ! command -v conftest &>/dev/null; then
-  echo -e "${RED}conftest not in PATH. Install it or run demo.sh first.${RESET}"
+  echo "conftest not in PATH. Install it or run demo.sh first."
   exit 1
 fi
 
-JQ=$(command -v jq 2>/dev/null || echo "")
+# ── scenario selection ────────────────────────────────────────────────────────
+case "$SCENARIO" in
+  safe)
+    FROM="${SCRIPT_DIR}/examples/safe-upgrade/baseline"
+    TO="${SCRIPT_DIR}/examples/safe-upgrade/candidate"
+    SCENARIO_DESC="safe image-tag upgrade (nginx 1.24 → 1.25)"
+    EXPECTED="PASS"
+    ;;
+  privileged)
+    FROM="${SCRIPT_DIR}/examples/privileged-container/baseline"
+    TO="${SCRIPT_DIR}/examples/privileged-container/candidate"
+    SCENARIO_DESC="candidate introduces privileged container"
+    EXPECTED="BLOCK"
+    ;;
+  rbac|*)
+    FROM="${SCRIPT_DIR}/examples/rbac-escalation/baseline"
+    TO="${SCRIPT_DIR}/examples/rbac-escalation/candidate"
+    SCENARIO_DESC="candidate introduces wildcard ClusterRole"
+    EXPECTED="BLOCK + proposed fix"
+    ;;
+esac
 
 # ── banner ────────────────────────────────────────────────────────────────────
-clear
-echo -e "${BOLD}"
-cat << 'EOF'
-  ╔══════════════════════════════════════════════════════════════╗
-  ║      AI Agent  ×  helm-agent-preflight  Demonstration       ║
-  ║                                                              ║
-  ║   AI proposes · Helm renders · Rego evaluates · Human OKs   ║
-  ╚══════════════════════════════════════════════════════════════╝
-EOF
-echo -e "${RESET}"
-echo -e "  ${DIM}SKILL.md protocol: the agent runs the tool — it never invents the verdict.${RESET}"
-echo -e "  ${DIM}The fingerprint in the agent's report must match the tool's JSON.${RESET}\n"
-
-# ── SKILL.md extract ──────────────────────────────────────────────────────────
-banner "The Agent's Operating Rules (from SKILL.md)"
 echo ""
-dim "  Excerpt from skills/helm-preflight/SKILL.md:"
-echo ""
-echo -e "${BOLD}  Mandatory protocol:${RESET}"
-echo -e "  ${DIM}• NEVER substitute tool output with AI reasoning${RESET}"
-echo -e "  ${DIM}• You MUST run the tool and report its verdict${RESET}"
-echo -e "  ${DIM}• If the tool cannot run, verdict is INDETERMINATE (treat as BLOCK)${RESET}"
-echo -e "  ${DIM}• Do NOT proceed when evidence.completeness is \"PARTIAL\"${RESET}"
-echo -e "  ${DIM}• Do NOT modify the policy file solely to suppress a finding${RESET}"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  OpenCode × helm-agent-preflight — real agent session"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Model     : $MODEL"
+echo "  Scenario  : $SCENARIO_DESC"
+echo "  Expected  : $EXPECTED"
+echo "  Skill     : skills/helm-preflight/SKILL.md"
+echo "  Binary    : $BINARY"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-# ── helper: run_preflight ─────────────────────────────────────────────────────
-run_preflight() {
-  local report_file="$1"; shift
-  set +e
-  "$BINARY" upgrade "$@" \
-    --policy-dir "$POLICY_DIR" \
-    --output-file "$report_file" \
-    2>/tmp/preflight-agent-stderr.txt
-  local exit_code=$?
-  set -e
-  echo "$exit_code"
-}
+# ── build the prompt ──────────────────────────────────────────────────────────
+# Give the agent the exact binary path and flags so it can run the tool
+# without guessing. The SKILL.md is attached as a file.
+read -r -d '' PROMPT << PROMPT_EOF || true
+Follow the helm-preflight skill protocol in the attached SKILL.md exactly.
 
-show_report() {
-  local report="$1"
-  if [ -n "$JQ" ]; then
-    local verdict fingerprint tool_ver n_findings
-    verdict=$(jq -r '.verdict' "$report")
-    fingerprint=$(jq -r '.fingerprint' "$report" | cut -c1-20)
-    tool_ver=$(jq -r '.tool.version' "$report")
-    n_findings=$(jq '.security_findings | length' "$report")
+Qualify this Helm upgrade:
 
-    echo -e "  ${BOLD}Verdict${RESET}     : $(colorize_verdict "$verdict")"
-    echo -e "  ${BOLD}Fingerprint${RESET} : ${DIM}${fingerprint}...${RESET}  ${DIM}(tamper-evident, excludes timestamps)${RESET}"
-    echo -e "  ${BOLD}Tool${RESET}        : ${DIM}${tool_ver}${RESET}"
-    echo -e "  ${BOLD}Findings${RESET}    : ${n_findings}"
+  Baseline chart : ${FROM}
+  Candidate chart: ${TO}
+  Release name   : demo-app
+  Namespace      : default
+  Kubernetes     : 1.28
+  Policy dir     : ${POLICY_DIR}
 
-    if [ "$n_findings" -gt 0 ]; then
-      echo ""
-      jq -r '.security_findings[] |
-        "    [\(.verdict_contribution)] \(.rule_id) (\(.severity)) — \(.object.kind)/\(.object.name)\n      \(.message)\n      pre_existing=\(.pre_existing)"' \
-        "$report" 2>/dev/null
-    fi
+The preflight binary to run is:
+  ${BINARY} upgrade \\
+    --from ${FROM} \\
+    --to   ${TO} \\
+    --release-name demo-app \\
+    --namespace default \\
+    --kube-version 1.28 \\
+    --policy-dir ${POLICY_DIR} \\
+    --output-file /tmp/preflight-agent-report.json
+
+After running it, read /tmp/preflight-agent-report.json and report:
+1. The verdict field (PASS / BLOCK / INDETERMINATE)
+2. The fingerprint (first 20 chars is fine)
+3. Every finding: rule_id, severity, object kind/name, message, pre_existing
+4. The diff summary (added/modified/removed counts)
+5. Confirmation that no_deployment_occurred is true
+
+If verdict is BLOCK, propose the smallest concrete code change to fix
+each finding. Then tell me which example chart would pass instead and why.
+
+Do not invent or assume the verdict. Run the binary and read the JSON.
+PROMPT_EOF
+
+# ── run opencode ──────────────────────────────────────────────────────────────
+echo "Starting OpenCode session (Ctrl+C to exit)..."
+echo ""
+
+"$OPENCODE" run \
+  --standalone \
+  --auto \
+  --model "$MODEL" \
+  --file "$SKILL" \
+  "$PROMPT"
+
+# ── show the raw report if it was written ────────────────────────────────────
+if [ -f /tmp/preflight-agent-report.json ]; then
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "  Tool output (what the agent received):"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  if command -v jq &>/dev/null; then
+    jq '{verdict, fingerprint: .fingerprint[:20], findings: [.security_findings[] | {rule: .rule_id, sev: .severity, obj: (.object.kind+"/"+.object.name), new: (if .pre_existing then "pre-existing" else "NEW" end)}], diff: .diff_summary, no_deployment: .run_metadata.no_deployment_occurred}' \
+      /tmp/preflight-agent-report.json
   else
-    grep -E '"verdict"|"fingerprint"|"rule_id"' "$report" | sed 's/^/  /'
+    python3 -c "
+import json, sys
+d = json.load(open('/tmp/preflight-agent-report.json'))
+print(json.dumps({'verdict': d['verdict'], 'fingerprint': d['fingerprint'][:20],
+  'findings': len(d['security_findings']),
+  'no_deployment': d['run_metadata']['no_deployment_occurred']}, indent=2))"
   fi
-}
-
-colorize_verdict() {
-  case "$1" in
-    PASS)          echo -e "${GREEN}${BOLD}PASS${RESET}" ;;
-    BLOCK)         echo -e "${RED}${BOLD}BLOCK${RESET}" ;;
-    INDETERMINATE) echo -e "${YELLOW}${BOLD}INDETERMINATE${RESET}" ;;
-    *)             echo "$1" ;;
-  esac
-}
-
-# ══════════════════════════════════════════════════════════════════════════════
-# SIMULATED AGENT SESSION
-# ══════════════════════════════════════════════════════════════════════════════
-
-banner "Simulated Agent Session — RBAC Escalation Scenario"
-echo ""
-human "Qualify the Helm upgrade from rbac-escalation/baseline to rbac-escalation/candidate"
-human "Release: demo-app  |  Namespace: default  |  Kubernetes: 1.28"
-echo ""
-
-agent "I will follow the helm-preflight skill protocol."
-agent "Step 1: Gather required inputs — ✔ all provided"
-agent "Step 2: Run helm preflight upgrade"
-echo ""
-
-dim "  \$ preflight upgrade \\"
-dim "      --from examples/rbac-escalation/baseline \\"
-dim "      --to   examples/rbac-escalation/candidate \\"
-dim "      --release-name demo-app --namespace default --kube-version 1.28 \\"
-dim "      --output-file demo-agent-reports/rbac.json"
-echo ""
-
-RBAC_REPORT="${REPORTS_DIR}/rbac.json"
-exit_code=$(run_preflight "$RBAC_REPORT" \
-  --from  "${SCRIPT_DIR}/examples/rbac-escalation/baseline" \
-  --to    "${SCRIPT_DIR}/examples/rbac-escalation/candidate" \
-  --release-name demo-app \
-  --namespace default \
-  --kube-version 1.28)
-
-tool "preflight exited with code ${exit_code} (2 = BLOCK)"
-echo ""
-
-agent "Step 3: Parse and report the verdict"
-echo ""
-show_report "$RBAC_REPORT"
-echo ""
-
-verdict_block "Upgrade must not proceed"
-echo ""
-agent "Step 4: Propose the smallest fix"
-echo ""
-echo -e "  ${BOLD}Finding RBAC-001/002:${RESET} ClusterRole uses wildcard (*) resources and verbs."
-echo -e "  ${BOLD}Proposed fix:${RESET} Replace wildcard rules with an explicit allowlist:\n"
-echo -e "  ${DIM}  rules:${RESET}"
-echo -e "  ${DIM}    - apiGroups: [\"\"]${RESET}"
-echo -e "  ${DIM}      resources: [\"pods\", \"services\", \"configmaps\"]  # explicit, not *${RESET}"
-echo -e "  ${DIM}      verbs:     [\"get\", \"list\", \"watch\"]             # explicit, not *${RESET}"
-echo ""
-agent "Re-running preflight against the SAFE chart to confirm the fix works..."
-echo ""
-
-SAFE_REPORT="${REPORTS_DIR}/safe.json"
-safe_exit=$(run_preflight "$SAFE_REPORT" \
-  --from  "${SCRIPT_DIR}/examples/safe-upgrade/baseline" \
-  --to    "${SCRIPT_DIR}/examples/safe-upgrade/candidate" \
-  --release-name demo-app \
-  --namespace default \
-  --kube-version 1.28)
-
-show_report "$SAFE_REPORT"
-echo ""
-verdict_pass "Upgrade cleared for human review"
-echo ""
-agent "I confirm the fingerprint in my report matches the tool output:"
-
-if [ -n "$JQ" ]; then
-  FP=$(jq -r '.fingerprint' "$SAFE_REPORT")
-  echo -e "  ${DIM}Report fingerprint : ${FP}${RESET}"
-  echo -e "  ${DIM}Tool JSON .fingerprint: ${FP}${RESET}"
-  echo -e "  ${GREEN}  ✔ Fingerprints match — verdict was not fabricated${RESET}"
 fi
-
-echo ""
-human "Reviewed. Approving the safe upgrade."
-echo ""
-dim "  \$ helm upgrade demo-app ./examples/safe-upgrade/candidate --namespace default"
-dim "  Release \"demo-app\" has been upgraded."
-echo ""
-
-# ══════════════════════════════════════════════════════════════════════════════
-# LIVE OPENCODE SESSION (if available)
-# ══════════════════════════════════════════════════════════════════════════════
-
-banner "Live OpenCode Session"
-echo ""
-
-if [ ! -f "$OPENCODE" ]; then
-  echo -e "  ${DIM}OpenCode not found at ${OPENCODE}${RESET}"
-  echo -e "  ${DIM}Install: https://opencode.ai  — then re-run this script${RESET}"
-  echo ""
-  echo -e "  ${BOLD}To run the live agent session manually:${RESET}"
-  echo ""
-  dim "  ${OPENCODE:-~/.opencode/bin/opencode} run \\"
-  dim "    --standalone --auto --archived \\"
-  dim "    --file '${SCRIPT_DIR}/skills/helm-preflight/SKILL.md' \\"
-  dim "    'Following the helm-preflight skill protocol, qualify this upgrade:"
-  dim "     Baseline: ${SCRIPT_DIR}/examples/rbac-escalation/baseline"
-  dim "     Candidate: ${SCRIPT_DIR}/examples/rbac-escalation/candidate"
-  dim "     Release: demo-app  Namespace: default  Kubernetes: 1.28"
-  dim "     Policy dir: ${POLICY_DIR}"
-  dim "     Run helm preflight upgrade and report the verdict and all findings.'"
-  echo ""
-else
-  echo -e "  ${GREEN}OpenCode found: $(${OPENCODE} --version 2>/dev/null | head -1)${RESET}"
-  echo -e "  ${DIM}Starting live agent session against rbac-escalation scenario...${RESET}"
-  echo -e "  ${DIM}(uses --standalone so it won't affect other OpenCode sessions)${RESET}\n"
-
-  PROMPT="Following the helm-preflight skill protocol in the attached SKILL.md file, qualify this Helm upgrade:
-
-Baseline chart:  ${SCRIPT_DIR}/examples/rbac-escalation/baseline
-Candidate chart: ${SCRIPT_DIR}/examples/rbac-escalation/candidate
-Release name:    demo-app
-Namespace:       default
-Kubernetes version: 1.28
-Policy directory: ${POLICY_DIR}
-
-Run: preflight upgrade (the binary at ${BINARY}) with --policy-dir ${POLICY_DIR}
-
-Report:
-1. The verdict (PASS/BLOCK/INDETERMINATE) with the JSON fingerprint
-2. All security findings (rule_id, severity, object, message)
-3. Your proposed remediation for each BLOCK finding
-4. Confirmation that no deployment occurred
-
-Do NOT invent or assume the verdict — run the tool and read its JSON output."
-
-  "$OPENCODE" run \
-    --standalone \
-    --auto \
-    --archived \
-    --file "${SCRIPT_DIR}/skills/helm-preflight/SKILL.md" \
-    "$PROMPT" \
-    2>/tmp/opencode-stderr.txt || {
-      echo -e "  ${YELLOW}OpenCode session ended (non-zero exit — check for API key configuration)${RESET}"
-      echo -e "  ${DIM}stderr: $(cat /tmp/opencode-stderr.txt | head -3)${RESET}"
-    }
-fi
-
-# ── summary ───────────────────────────────────────────────────────────────────
-banner "Summary"
-echo ""
-echo -e "  Reports written to: ${BOLD}${REPORTS_DIR}/${RESET}"
-for f in "${REPORTS_DIR}"/*.json; do
-  [ -f "$f" ] || continue
-  v=$(jq -r '.verdict' "$f" 2>/dev/null || echo "?")
-  case "$v" in PASS) c="${GREEN}";; BLOCK) c="${RED}";; *) c="${YELLOW}";; esac
-  printf "  %-35s %s${BOLD}%s${RESET}\n" "$(basename "$f")" "$c" "$v"
-done
-echo ""
-echo -e "${BOLD}  Operating contract:${RESET}"
-echo -e "  ${DIM}AI agents propose and explain. The tool decides. Humans authorize.${RESET}\n"
