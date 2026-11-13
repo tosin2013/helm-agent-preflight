@@ -106,7 +106,7 @@ brew install conftest                    # macOS / Linux (Homebrew)
 # or: https://www.conftest.dev/install/
 
 # 2. Install the Helm plugin
-helm plugin install https://github.com/tosin2013/helm-agent-preflight
+helm plugin install https://github.com/tosin2013/helm-agent-preflight --verify=false
 ```
 
 The install hook downloads the platform binary from GitHub Releases automatically.

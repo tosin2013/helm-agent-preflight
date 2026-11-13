@@ -13,7 +13,6 @@ description: |-
     2  BLOCK          - at least one enforced policy was violated
     3  INDETERMINATE  - required verification could not be completed
     4  error          - tool execution failure
-command: "$HELM_PLUGIN_DIR/bin/preflight"
 platformCommand:
   - os: linux
     arch: amd64
