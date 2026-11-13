@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: Apache-2.0
 # Copyright The helm-agent-preflight Authors.
-# Records the agent demo GIF: a real OpenCode session using helm preflight upgrade.
-# Pre-flight requirements (exits with error if either fails):
-#   1. OpenCode responds to a test prompt
-#   2. A kind cluster is running (shows real Kubernetes context)
+# Records the agent demo GIF as a real 3-turn conversation with OpenCode.
+# No simulated user messages — only genuine OpenCode responses are shown.
 set -euo pipefail
 
 export PATH="${HOME}/.local/bin:/home/vpcuser/bin:${HOME}/.opencode/bin:/usr/local/bin:$PATH"
@@ -12,65 +10,58 @@ cd /home/vpcuser/helm-agent-preflight
 
 OPENCODE="${HOME}/.opencode/bin/opencode"
 MODEL="${OPENCODE_MODEL:-litellm/claude-sonnet-4-6}"
+SESSION="ses-preflight-$(date +%s)"
 
-# ── 1. Verify OpenCode responds ───────────────────────────────────────────────
-PING=$("$OPENCODE" run --standalone --auto --model "$MODEL" \
+# ── 1. Verify OpenCode responds before recording anything ─────────────────────
+PING=$("$OPENCODE" run --session "${SESSION}-ping" --model "$MODEL" \
   "Reply with exactly one word: READY" 2>/dev/null | tr -d '[:space:]')
 if [[ -z "$PING" ]] || [[ "$PING" == *"Error"* ]] || [[ "$PING" == *"limit"* ]]; then
   echo "ERROR: OpenCode did not respond (got: '${PING}')" >&2
-  echo "Check ~/.config/opencode/opencode.json and your API key." >&2
   exit 1
 fi
 
 # ── 2. Verify kind cluster ────────────────────────────────────────────────────
 if ! kubectl cluster-info --context kind-preflight-demo &>/dev/null; then
   echo "ERROR: kind cluster 'preflight-demo' is not running." >&2
-  echo "Start it: KIND_EXPERIMENTAL_PROVIDER=podman kind create cluster --name preflight-demo" >&2
   exit 1
 fi
-
-# ── Show cluster context ──────────────────────────────────────────────────────
-sleep 1
 kubectl get nodes --context kind-preflight-demo
 sleep 2
 echo ""
 
-# ── Show the command that will run — displayed text matches what executes ──────
-echo "$ opencode run \\"
-echo "    --file skills/helm-preflight/SKILL.md \\"
-echo "    \"Qualify this Helm upgrade using helm preflight upgrade:\""
-echo "      --from  examples/rbac-escalation/baseline"
-echo "      --to    examples/rbac-escalation/candidate"
-echo "      --release-name webapp --namespace staging --kube-version 1.37"
-sleep 2
-echo ""
-
-# ── Run OpenCode — displayed command above is exactly what executes ───────────
-# stderr is shown (not suppressed) so any failure is visible in the recording.
-# If OpenCode exits non-zero the script stops immediately — no silent empty GIF.
+# ── TURN 1: introduce the problem ────────────────────────────────────────────
 set +e
 "$OPENCODE" run \
-  --standalone \
-  --auto \
+  --session "$SESSION" \
   --model "$MODEL" \
   --file "skills/helm-preflight/SKILL.md" \
-  "Before running any tools, write 2-3 sentences explaining what you are about to do and why. Then qualify this Helm upgrade using helm preflight upgrade:
-  --from  examples/rbac-escalation/baseline
-  --to    examples/rbac-escalation/candidate
-  --release-name webapp --namespace staging --kube-version 1.37
-
-After running the tool, report the verdict, all security findings with their JSON paths, and propose the smallest concrete fix. Include the fingerprint."
-OPENCODE_EXIT=$?
+  "I'm about to upgrade my webapp Helm chart. The candidate chart adds new RBAC permissions. Can you help me check if it's safe using the helm preflight skill? I'll give you the chart locations when you're ready."
+[ $? -ne 0 ] && { echo "ERROR: OpenCode session failed — demo aborted."; exit 1; }
 set -e
 
-if [ "$OPENCODE_EXIT" -ne 0 ]; then
-  echo ""
-  echo "ERROR: OpenCode session failed (exit $OPENCODE_EXIT) — demo aborted."
-  echo "Check ~/.config/opencode/opencode.json and try: opencode run 'ping'"
-  exit 1
-fi
+sleep 10
 
-# ── 10s review pause ──────────────────────────────────────────────────────────
+# ── TURN 2: provide chart paths — agent runs the tool ────────────────────────
+set +e
+"$OPENCODE" run \
+  --session "$SESSION" \
+  --model "$MODEL" \
+  "The charts are examples/rbac-escalation/baseline (current) and examples/rbac-escalation/candidate (new). Release: webapp, namespace: staging, Kubernetes 1.37. Please run the preflight check now."
+[ $? -ne 0 ] && { echo "ERROR: OpenCode session failed — demo aborted."; exit 1; }
+set -e
+
+sleep 10
+
+# ── TURN 3: ask for the minimum fix ──────────────────────────────────────────
+set +e
+"$OPENCODE" run \
+  --session "$SESSION" \
+  --model "$MODEL" \
+  "What is the minimum change I need to make to get a PASS verdict? Show me the exact diff."
+[ $? -ne 0 ] && { echo "ERROR: OpenCode session failed — demo aborted."; exit 1; }
+set -e
+
+# ── review pause ──────────────────────────────────────────────────────────────
 echo ""
 for i in $(seq 10 -1 1); do
   echo "  Reviewing output... ${i}s"
