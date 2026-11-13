@@ -1,0 +1,22 @@
+# Build outputs (except the pre-built linux-amd64 demo binary)
+bin/preflight-linux-arm64
+bin/preflight-darwin-amd64
+bin/preflight-darwin-arm64
+bin/preflight-windows-amd64.exe
+
+# Downloaded tool binaries
+bin/conftest
+bin/agg
+bin/ttyd
+bin/ffmpeg
+
+# Test and coverage artifacts
+coverage.out
+coverage.html
+
+# Demo report output directories
+demo-reports/
+demo-minikube-reports/
+
+# Local temp files
+*.cast.tmp

@@ -18,17 +18,28 @@ URL="https://github.com/tosin2013/helm-agent-preflight/releases/download/v${VERS
 
 mkdir -p "${PLUGIN_DIR}/bin"
 
+install_binary() {
+  chmod +x "${PLUGIN_DIR}/bin/${BINARY_NAME}"
+  echo "helm-agent-preflight: installed ${BINARY_NAME} v${VERSION}"
+  # Warn if conftest is missing — the binary requires it for Rego policy evaluation
+  if ! command -v conftest >/dev/null 2>&1; then
+    echo ""
+    echo "  NOTE: 'conftest' is required for security evaluation but was not found in PATH."
+    echo "  Install conftest: https://www.conftest.dev/install/"
+    echo "  Quick install (Linux/macOS):"
+    echo "    curl -fsSL https://github.com/open-policy-agent/conftest/releases/download/v0.51.0/conftest_0.51.0_\$(uname -s)_x86_64.tar.gz | tar -xz -C /usr/local/bin conftest"
+    echo ""
+  fi
+  exit 0
+}
+
 if command -v curl >/dev/null 2>&1; then
   if curl -fsSL -o "${PLUGIN_DIR}/bin/${BINARY_NAME}" "$URL" 2>/dev/null; then
-    chmod +x "${PLUGIN_DIR}/bin/${BINARY_NAME}"
-    echo "helm-agent-preflight: installed ${BINARY_NAME} v${VERSION}"
-    exit 0
+    install_binary
   fi
 elif command -v wget >/dev/null 2>&1; then
   if wget -q -O "${PLUGIN_DIR}/bin/${BINARY_NAME}" "$URL" 2>/dev/null; then
-    chmod +x "${PLUGIN_DIR}/bin/${BINARY_NAME}"
-    echo "helm-agent-preflight: installed ${BINARY_NAME} v${VERSION}"
-    exit 0
+    install_binary
   fi
 fi
 

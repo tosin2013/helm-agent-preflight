@@ -101,10 +101,17 @@ JSON report.
 ## Install
 
 ```bash
+# 1. Install conftest (required for Rego policy evaluation)
+brew install conftest                    # macOS / Linux (Homebrew)
+# or: https://www.conftest.dev/install/
+
+# 2. Install the Helm plugin
 helm plugin install https://github.com/tosin2013/helm-agent-preflight
 ```
 
-Or from source:
+The install hook downloads the platform binary from GitHub Releases automatically.
+
+**Build from source:**
 
 ```bash
 git clone https://github.com/tosin2013/helm-agent-preflight
