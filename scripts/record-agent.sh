@@ -46,6 +46,9 @@ sleep 2
 echo ""
 
 # ── Run OpenCode — displayed command above is exactly what executes ───────────
+# stderr is shown (not suppressed) so any failure is visible in the recording.
+# If OpenCode exits non-zero the script stops immediately — no silent empty GIF.
+set +e
 "$OPENCODE" run \
   --standalone \
   --auto \
@@ -58,8 +61,16 @@ echo ""
 
 Report the verdict, all security findings with their JSON paths, and
 propose the smallest concrete fix. Include the fingerprint from the
-JSON output." \
-  2>/dev/null
+JSON output."
+OPENCODE_EXIT=$?
+set -e
+
+if [ "$OPENCODE_EXIT" -ne 0 ]; then
+  echo ""
+  echo "ERROR: OpenCode session failed (exit $OPENCODE_EXIT) — demo aborted."
+  echo "Check ~/.config/opencode/opencode.json and try: opencode run 'ping'"
+  exit 1
+fi
 
 # ── 10s review pause ──────────────────────────────────────────────────────────
 echo ""
