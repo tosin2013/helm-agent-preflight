@@ -55,10 +55,11 @@ helm preflight upgrade \
 The plugin works with any Kubernetes distribution including OpenShift. Pass the
 Kubernetes version that matches your OpenShift release via `--kube-version`:
 
-| Platform | Version | `--kube-version` |
-|----------|---------|-----------------|
+| Platform | Kubernetes | `--kube-version` |
+|----------|------------|-----------------|
 | Kubernetes (latest stable) | **1.37** | `--kube-version 1.37` |
 | Kubernetes 1.36 | 1.36 | `--kube-version 1.36` |
+| **OpenShift 5.0** | **1.37** | `--kube-version 1.37` |
 | OpenShift 4.23 | 1.36 | `--kube-version 1.36` |
 | OpenShift 4.22 | 1.35 | `--kube-version 1.35` |
 | OpenShift 4.21 | 1.34 | `--kube-version 1.34` |
