@@ -142,43 +142,7 @@ jobs:
           go install golang.org/x/vuln/cmd/govulncheck@latest
           govulncheck ./...
 
-  record-demos:
-    name: Record Demo GIFs (VHS)
-    runs-on: ubuntu-latest
-    needs: [build-and-test]
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-go@v7
-        with:
-          go-version: "1.26"
-          cache: true
-
-      - name: Install ffmpeg
-        run: sudo apt-get install -y ffmpeg
-
-      - name: Install VHS
-        run: go install github.com/charmbracelet/vhs@latest
-
-      - name: Install Conftest
-        run: |
-          curl -fsSL "https://github.com/open-policy-agent/conftest/releases/download/v0.71.1/conftest_0.71.1_Linux_x86_64.tar.gz" \
-            | tar -xz -C /usr/local/bin conftest
-          conftest --version
-
-      - name: Build binary
-        run: make build
-
-      - name: Record demos
-        run: |
-          export PATH="$(go env GOPATH)/bin:$PATH"
-          vhs demos/offline.tape
-          vhs demos/agent.tape
-
-      - name: Upload demo GIFs
-        uses: actions/upload-artifact@v7
-        with:
-          name: demo-recordings
-          path: demos/*.gif
-          retention-days: 30
+  # VHS demo recording removed — VHS requires Chromium (GTK/ATK libs) which
+  # is unavailable in the CI runner. GIF demos are recorded locally using
+  # asciinema + agg and committed directly to the repo.
+  # To re-record: make demo-record-asciinema && make demo-render-gif
